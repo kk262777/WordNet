@@ -1,5 +1,6 @@
-import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdOut;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -47,38 +48,25 @@ public class WordNet {
     /**
      * Noun to Vertex mapping {noun -> synsetVertex of this noun}
      */
-//    private Map<String, SynsetVertex> nounMap;
     private Map<String, List<Integer>> nounMap;
-
-    /**
-     * Adjacent list mapping {v.id -> adjList of v}
-     */
-//    private final List<Integer>[] adj;
-
-    /**
-     * Indegree of vertex {indegree: v.id -> numOfPrevVertices of v}
-     */
-//    private final int[] indegree;
 
     /**
      * {id -> vertex of this id}
      */
     private final SynsetVertex[] idMap;
 
-    private Digraph digraph;
-
     /**
-     * Number of vertices in this WordNet
+     * Directed graph network
      */
-    private int V;
+    private Digraph digraph;
 
     /* Ancestor of all vertices */
     private int root = -1;
 
 
     public WordNet(String synsets, String hypernyms) throws RuntimeException {
-        BufferedReader br1 = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("synsets15.txt")));
-        BufferedReader br2 = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("hypernyms15Tree.txt")));
+        BufferedReader br1 = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(synsets)));
+        BufferedReader br2 = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(hypernyms)));
         nounMap = new HashMap<>();
         /* read synset */
 
@@ -108,75 +96,12 @@ public class WordNet {
             }
         });
 
-
-
-
-
-//        String line = null;
-//        String[] lineSplit = null;
-//        try {
-//            while ((line = br1.readLine()) != null) {
-//                String[] split = line.split(",");
-//                String[] nouns = split[1].split(" ");
-//                int id = Integer.parseInt(split[0]);
-//                SynsetVertex vertex = new SynsetVertex(id, nouns, split[2]);
-//                Arrays.stream(nouns).forEach(noun -> {
-//                    nounMap.computeIfAbsent(noun, k -> new ArrayList<Integer>()).add(id);
-//                    // :)
-////                    List<Integer> l = nounMap.putIfAbsent(noun, Arrays.asList(id));
-////                    if (l != null) {
-////                        l.add(id);
-////                    }
-//                });
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-
-//        nounMap = br1.lines()
-//                .flatMap(SynsetVertex::toPairX)
-//                .collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
-
         /* output checking */
         for (Map.Entry<String, List<Integer>> x : nounMap.entrySet()) {
             System.out.println(x.getKey() + " " + x.getValue());
         }
-//
-//        V = nounMap.values().size();
-//        idMap = new SynsetVertex[V];
-//        for (SynsetVertex each : nounMap.values()) {
-//            idMap[each.getId()] = each; /* idMap: id -> synsetVertex }*/
-//        }
-//        indegree = new int[V];
-//        adj = (List<Integer>[]) new ArrayList[V];
-//        for (int i = 0; i < V; i++) {
-//            adj[i] = new ArrayList<Integer>();
-//        }
-//
-//        String line = null;
-//        String[] lineSplit = null;
-//        try {
-//            while ((line = br2.readLine()) != null) {
-//                lineSplit = line.split(",");
-//                int v = Integer.valueOf(lineSplit[0]);
-//                if (v > V) {
-//                    throw new java.lang.IllegalArgumentException();
-//                }
-//                List<Integer> curAdj = adj[v];
-//                for (int i = 1; i < lineSplit.length; i++) {
-//                    int w = Integer.valueOf(lineSplit[i]);
-//                    curAdj.add(w);
-//                    indegree[w] = v;
-//                }
-//                adj[v] = curAdj;
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
         for (int i = 0; i < digraph.V(); i++) {
-            if ( digraph.adj(i) == null) continue;
+            if (digraph.adj(i) == null) continue;
             for (int e : digraph.adj(i)) {
                 System.out.print(i + "->" + e + " ");
             }
@@ -186,7 +111,6 @@ public class WordNet {
         if (!checkValid()) {
             throw new IllegalArgumentException();
         }
-
 
     }
 
@@ -254,14 +178,25 @@ public class WordNet {
 //
 //    }
 
-//    // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
+    //    // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
 //    // in a shortest ancestral path (defined below)
 //    public String sap(String nounA, String nounB) {
 //
 //    }
 //
-//    // do unit testing of this class
-//    public static void main(String[] args) {
-//
-//    }
+    // do unit testing of this class
+    public static void main(String[] args) {
+        In in = new In("/home/xgy/IdeaProjects/WordNet/src/digraph1.txt");
+        Digraph G = new Digraph(in);
+        SAP sap = new SAP(G);
+        int v = 7;
+        int w = 2;
+        int length = sap.length(v, w);
+//            int ancestor = sap.ancestor(v, w);
+        StdOut.printf("length = %d,\n", length);
+//        WordNet wordNet = new WordNet("synsets15.txt", "hypernyms15Tree.txt");
+//        SAP sap = new SAP(wordNet.digraph);
+//        System.out.println(sap.length(11, 9));
+
+    }
 }
