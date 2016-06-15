@@ -1,6 +1,4 @@
 import edu.princeton.cs.algs4.Digraph;
-import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.StdOut;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -19,28 +17,28 @@ public class WordNet {
      * Nested class for vertices in WordNet
      */
     private static class SynsetVertex {
-        String[] synset; // synset is a set of nouns {noun1, noun2, noun3}, they are synonym.
+        String synset; // synset is a set of nouns {noun1, noun2, noun3}, they are synonym.
         String definition;
         int id; // id of this vertex
 
-        private SynsetVertex(int id, String[] synsetGroup, String definition) {
+        private SynsetVertex(int id, String synsetGroup, String definition) {
             this.id = id;
             this.synset = synsetGroup;
             this.definition = definition;
         }
 
-        public String[] getSynset() {
+        public String getSynset() {
             return synset;
         }
 
-        public int getId() {
+        int getId() {
             return id;
         }
 
         public static Stream<SimpleEntry<String, SynsetVertex>> toPairX(String line) {
             String[] split = line.split(",");
             String[] nouns = split[1].split(" ");
-            SynsetVertex vertex = new SynsetVertex(Integer.valueOf(split[0]), nouns, split[2]);
+            SynsetVertex vertex = new SynsetVertex(Integer.valueOf(split[0]), split[1], split[2]);
             return Arrays.stream(nouns).map(noun -> new SimpleEntry<String, SynsetVertex>(noun, vertex));
         }
     }
@@ -78,7 +76,7 @@ public class WordNet {
                     Arrays.stream(nouns).forEach(noun ->
                             nounMap.computeIfAbsent(noun, k -> new ArrayList<Integer>()).add(id)
                     );
-                    return new SynsetVertex(id, nouns, split[2]);
+                    return new SynsetVertex(id, split[1], split[2]);
                 })
                 .collect(Collectors.toList());
 
@@ -97,16 +95,16 @@ public class WordNet {
         });
 
         /* output checking */
-        for (Map.Entry<String, List<Integer>> x : nounMap.entrySet()) {
-            System.out.println(x.getKey() + " " + x.getValue());
-        }
-        for (int i = 0; i < digraph.V(); i++) {
-            if (digraph.adj(i) == null) continue;
-            for (int e : digraph.adj(i)) {
-                System.out.print(i + "->" + e + " ");
-            }
-            System.out.println();
-        }
+//        for (Map.Entry<String, List<Integer>> x : nounMap.entrySet()) {
+//            System.out.println(x.getKey() + " " + x.getValue());
+//        }
+//        for (int i = 0; i < digraph.V(); i++) {
+//            if (digraph.adj(i) == null) continue;
+//            for (int e : digraph.adj(i)) {
+//                System.out.print(i + "->" + e + " ");
+//            }
+//            System.out.println();
+//        }
 
         if (!checkValid()) {
             throw new IllegalArgumentException();
@@ -170,33 +168,42 @@ public class WordNet {
         return nounMap.containsKey(word);
     }
 
-    // distance between nounA and nounB (defined below)
-//    public int distance(String nounA, String nounB) throws IllegalArgumentException {
-////        SynsetVertex a = nounMap.get(nounA);
-////        SynsetVertex b = nounMap.get(nounB);
-//        if (nounA == null || nounB == null) throw new IllegalArgumentException();
-//
-//    }
+    //     distance between nounA and nounB (defined below)
+    public int distance(String nounA, String nounB) throws IllegalArgumentException {
+        Iterable<Integer> a = nounMap.get(nounA);
+        Iterable<Integer> b = nounMap.get(nounB);
+        if (nounA == null || nounB == null) throw new IllegalArgumentException();
+        SAP sap = new SAP(digraph);
+        return sap.length(a, b);
+    }
 
-    //    // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
-//    // in a shortest ancestral path (defined below)
-//    public String sap(String nounA, String nounB) {
-//
-//    }
-//
+    // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
+    // in a shortest ancestral path (defined below)
+    public String sap(String nounA, String nounB) {
+        Iterable<Integer> a = nounMap.get(nounA);
+        Iterable<Integer> b = nounMap.get(nounB);
+        if (nounA == null || nounB == null) throw new IllegalArgumentException();
+        SAP sap = new SAP(digraph);
+        return idMap[sap.ancestor(a, b)].synset;
+    }
+
     // do unit testing of this class
     public static void main(String[] args) {
-        In in = new In("/home/xgy/IdeaProjects/WordNet/src/digraph1.txt");
-        Digraph G = new Digraph(in);
-        SAP sap = new SAP(G);
-        int v = 7;
-        int w = 2;
-        int length = sap.length(v, w);
-//            int ancestor = sap.ancestor(v, w);
-        StdOut.printf("length = %d,\n", length);
-//        WordNet wordNet = new WordNet("synsets15.txt", "hypernyms15Tree.txt");
-//        SAP sap = new SAP(wordNet.digraph);
-//        System.out.println(sap.length(11, 9));
+//        In in = new In("/home/xgy/IdeaProjects/WordNet/src/digraph1.txt");
+//        Digraph G = new Digraph(in);
+//        SAP sap = new SAP(G);
+////        int v = 1;
+//        List<Integer> v = Arrays.asList(7, 3);
+////        int w = 6;
+//        List<Integer> w = Arrays.asList(10, 2);
+////        int length = sap.length(v, w);
+//        int length = sap.length(v, w);
+//        int ancestor = sap.ancestor(v, w);
+//        StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
+        WordNet wordNet = new WordNet("synsets.txt", "hypernyms.txt");
+        System.out.println(wordNet.sap("worm", "bird"));
+        System.out.println(wordNet.distance("worm", "bird"));
+        System.out.println(wordNet.idMap[wordNet.root].synset);
 
     }
 }
